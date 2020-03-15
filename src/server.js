@@ -217,7 +217,11 @@ app.get('/api/getAllVerifiedQuestion' , (req,res) => {
 })
 
 app.get('/api/getBatchQuestionUpdate' , (req,res) => {
+    console.log(req.params.questionBatch)
+    console.log(req.query.questionBatch)
+    
     var arr = JSON.parse(req.query.questionBatch);
+
     var arrayToUpdate = []
     for (q of arr){
         arrayToUpdate.push(q.questionId)
