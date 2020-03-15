@@ -216,7 +216,7 @@ app.get('/api/getAllVerifiedQuestion' , (req,res) => {
     })
 })
 
-app.get('/api/getBatchQuestionUpdate' , (req,res) => {
+app.post('/api/getBatchQuestionUpdate' , (req,res) => {
     console.log(req.params.questionBatch)
     console.log(req.query.questionBatch)
     
