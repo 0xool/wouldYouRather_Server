@@ -39,7 +39,8 @@ async function generateReport(){
     await pipeline(questionCursor,csvStream,fs.createWriteStream(dst))
     console.log('report generated')
 }
-
+//=====================================================================
+// ======================= Initialization ======================= 
 mongoose.Promise = global.Promise
 mongoose.connect(config.DATABASE , { useNewUrlParser: true,useUnifiedTopology: true}).then(() => {
 console.log("Connected to Database");
@@ -65,9 +66,8 @@ app.use((req, res, next) => {
     next();
   });
 
-
+//=====================================================================
 // ======================= Post =======================
-
 // Question API :
 app.post('/api/postQuestion', (req,res) => {
     const question = new Question(req.body)
@@ -83,10 +83,29 @@ app.post('/api/postQuestion', (req,res) => {
     })
 
 })
-
+//=====================================================================
 // User API :
 
 app.post('/api/createUser', (req,res) => {
+    if (req.body.username == null) {
+        res.status(400).send({
+            errorMessage : 'No username  has been entered'
+        })
+        return
+    }
+    if (req.body.password == null) {
+        res.status(400).send({
+            errorMessage : 'No Password has been entered'
+        })
+        return
+    }
+    if (req.body.email == null) {
+        res.status(400).send({
+            errorMessage : 'No Emai has been entered'
+        })
+        return
+    }
+    
     const user = new User(req.body)
     user.save((err,doc) => {
         if (err){
@@ -100,8 +119,8 @@ app.post('/api/createUser', (req,res) => {
     })
 })
 
+//=====================================================================
 app.post('/api/adminLogin', (req,res) => {
-    console.log('the fuck')
     User.find( {$and : [{username:req.body.username},{password:req.body.password},{isAdmin:true}]}, (err,doc) => {
         
         if (doc.length > 0){
@@ -117,7 +136,25 @@ app.post('/api/adminLogin', (req,res) => {
         })
     })
 })
+//=====================================================================
+app.post('/api/userLogin', (req,res) => {
+    User.find( {$and : [{username:req.body.username},{password:req.body.password}]}, (err,doc) => {
+        
+        if (doc.length > 0){
+            res.status(200).json({
+                auth:true,
+                message: "WELCOME.",
+                doc:doc[0]
+            })
+             return
+        }
+        res.status(400).json({
+            message: 'Username or Password Incorrect ',
+        })
+    })
+})
 
+//=====================================================================
 app.post('/api/vote', (req,res) => {
     
     if (req.body._id == null){
@@ -133,7 +170,6 @@ app.post('/api/vote', (req,res) => {
         return
     }
     var number = parseInt(req.body.voteNumber)
-    console.log(number)
     switch (number) {
         case Number(1):
             Question.findByIdAndUpdate(req.body._id,{ $inc : {firstQuestionVoteNumber:1}}, {new:true} , (err,doc) => {
@@ -170,14 +206,10 @@ app.post('/api/vote', (req,res) => {
     //add one vote to secondQuestionVoteNumber if 2 
     User.find({_id: req.body._id}, (err,doc) => {
         if (err) return res.status(400).send(err)
-
-
         
     })
 
 })
-
-
 // ======================= Get ==========================
 
 // Get Unverified Questions
@@ -187,19 +219,35 @@ app.get('/api/getUnverifiedQuestions',(req,res) => {
         res.send(doc)
     })
 })
-
-
+//=====================================================================
 app.get('/api/getQuestionById' , (req,res) => {
-    let id = req.query.id
-    console.log(id)
+    let id = req.query.id    
     Question.findById(id , (err,doc) => {
         if (err) return res.status(400).send(err)
         res.send(doc)
     })
 })
-
+//=====================================================================
+app.get('api/getUserQuestionsByID' , (req,res) => {
+    let id = req.query.id
+    User.findById(id,(err,doc) => {
+        if (err) return res.status(400).send(err)
+        res.send(doc)
+    })  
+})
+//=====================================================================
+app.get('api/getUserBookmarksByID' , (req,res) => {
+    let id = req.query.id
+    User.findById(id,(err,doc) => {
+        if (err) return res.status(400).send(err)
+        res.json({
+            response: 'success',
+            doc: doc,
+        })
+    })  
+})
+//=====================================================================
 app.get('/api/getAllQuestion' , (req,res) => {
-    console.log("mother fucker")
     Question.find().exec((err,doc) => 
     {
         if (err){
@@ -208,25 +256,20 @@ app.get('/api/getAllQuestion' , (req,res) => {
         res.send(doc)
     })
 })
-
+//=====================================================================
 app.get('/api/getAllVerifiedQuestion' , (req,res) => {
     Question.find({isVerified:{$eq: true}} , (err,doc) => {
         if (err) return res.status(400).send(err)
         res.send(doc)
     })
 })
-
-app.post('/api/getBatchQuestionUpdate' , (req,res) => {
-    console.log(req.params.questionBatch)
-    console.log(req.query.questionBatch)
-    
+//=====================================================================
+app.get('/api/getBatchQuestionUpdate' , (req,res) => {
     var arr = JSON.parse(req.query.questionBatch);
-
     var arrayToUpdate = []
     for (q of arr){
         arrayToUpdate.push(q.questionId)
     }
-    console.log(arrayToUpdate)
 
     Question.find({_id:{$in:arrayToUpdate}},(err,doc) => {
         
@@ -235,7 +278,7 @@ app.post('/api/getBatchQuestionUpdate' , (req,res) => {
         res.send(doc)
     })
 })
-
+//=====================================================================
 app.get('/api/getQuestionAfterBundle' , (req,res) => {
     Question.find({bundleVersion: {$gt : req.query.bundleVersion}} , (err,doc) =>{
         if (err){
@@ -244,7 +287,7 @@ app.get('/api/getQuestionAfterBundle' , (req,res) => {
         res.send(doc)
     })
 })
-
+//=====================================================================
 app.get('/api/getQuestion' , (req,res) => {
     let skip = parseInt(req.query.skip)
     let limit = parseInt(req.query.limit)
@@ -255,7 +298,7 @@ app.get('/api/getQuestion' , (req,res) => {
         res.send(doc)
     })
 })
-
+//=====================================================================
 // USER API :
 
 app.get('/api/getAllUsers' , (req,res) => {
@@ -267,7 +310,33 @@ app.get('/api/getAllUsers' , (req,res) => {
         res.send(doc)
     })
 })
-
+//=====================================================================
+app.get('/api/getAllUserQuestions' , (req,res) => {
+    User.findById(req.query._id).exec((err,doc) => 
+    {
+        if (err  || doc == null){
+            res.status(400).send(err)
+        }else{
+            Question.find({$and :   [{'_id' : {$in : doc.questionId}}/*{isVerified:true}*/]},(err,qDoc) => {
+                res.send(qDoc)                
+            })    
+        }            
+    })
+})
+//=====================================================================
+app.get('/api/getAllUserBookmarks' , (req,res) => {
+    User.findById(req.query._id).exec((err,doc) => 
+    {
+        if (err || doc == null){
+            res.status(400).send(err)
+        }   
+                 
+        Question.find({$and :   [{'_id' : {$in : doc.bookmakrs}}]},(err,qDoc) => {
+            res.send(qDoc)                
+        })                
+    })
+})
+//=====================================================================
 // ======================= Update ==========================
 // QUESTION API :
 app.post('/api/validateQuestionById', (req,res)=> {
@@ -288,7 +357,7 @@ app.post('/api/validateQuestionById', (req,res)=> {
         })
     })
 })
-
+//=====================================================================
 app.post('/api/validateAll', (req,res)=> {
 
         Question.find({isVerified:false},(err,doc) => {
@@ -313,12 +382,9 @@ app.post('/api/validateAll', (req,res)=> {
                 })
     })
 })
-
-
+//=====================================================================
 // USER API :
 app.post('/api/makeUserAdmingByID', (req,res)=> {
-
-
     User.findByIdAndUpdate(req.body._id, {isAdmin:true}, {new:true}, (err,doc)=>{
         if (err){
             return res.status(400).send(err)
@@ -330,37 +396,93 @@ app.post('/api/makeUserAdmingByID', (req,res)=> {
         })
     })
 })
+//=====================================================================
+app.post("/api/deleteUserQuestionById",(req,res) => {
+    User.findByIdAndUpdate(req.body._id,{$pullAll: {questionId:req.body.questionId}},(err,doc) => {
+        if (err) res.status(400).send(err)
+        res.send(doc)
+    })
+})
+//=====================================================================
+app.post("/api/deleteUserBookmarkById",(req,res) => {
+    User.findByIdAndUpdate(req.body._id,{$pullAll: {bookmakrs:req.body.bookmarkId}},(err,doc) => {
+        if (err) res.status(400).send(err)
+        res.send(doc)
+    })
+})
+//=====================================================================
 app.post('/api/addToUserQuestionById', (req,res)=> {
     if (req.body.q_id == null){
         res.status(400).send({
-            errorMessage : 'No Question Id has been entered'
+            errorMessage : 'No Question Id(q_id) has been entered'
         })
         return
     }
-    User.findByIdAndUpdate(req.body._id, {$addToSet : {questionId:req.body.q_id}}, {new:true}, (err,doc)=>{
-        if (err){
-            return res.status(400).send(err)
-        }
-
-        res.json({
-            success:true,
-            doc:doc
+    if (req.body._id == null) {
+        res.status(400).send({
+            errorMessage : 'No User Id(_id) has been entered'
         })
-    })
-})
+        return
+    }
 
+    Question.findById(req.body.q_id,(err,doc) => {
+
+        if (err || doc == null){
+            return res.status(400).json({
+                message : 'question does not exist',
+                err : err,
+            })            
+        }
+        User.findByIdAndUpdate(req.body._id, {$addToSet : {questionId:req.body.q_id}}, {new:true}, (err,doc)=>{
+            if (err){
+                return res.status(400).send(err)
+            }
+    
+            res.json({
+                success:true,
+                doc:doc
+            })
+        })
+
+    })
+
+
+
+})
+//=====================================================================
 app.post('/api/addBookmark', (req,res)=> {
+
     if (req.body.q_id == null){
         res.status(400).send({
             errorMessage : 'No Question Id has been entered'
         })
         return
     }
-    User.findByIdAndUpdate(req.body._id, {$addToSet : {bookmakrs:req.body.q_id}}, {new:true}, (err,doc)=>{
-        res.json({
-            success:true,
-            doc:doc
+    if (req.body._id == null){
+        res.status(400).send({
+            errorMessage: 'No User ID has been entered'
         })
+    }
+
+    Question.findById(req.body.q_id,(err,doc) => {
+
+        if (err || doc == null){
+            return res.status(400).json({
+                message : 'question does not exist',
+                err : err,
+            })            
+        }
+        User.findByIdAndUpdate(req.body._id, {$addToSet : {bookmakrs:req.body.q_id}}, {new:true}, (err,doc)=>{
+            if (err){
+                return res.status(400).send(err)
+            }
+    
+            res.json({
+                success:true,
+                doc:doc
+            })
+        })
+
     })
 })
 // ======================= Delete ==========================
@@ -371,13 +493,13 @@ app.delete("/api/deleteQuestionById",(req,res) => {
         res.send(doc)
     })
 })
-
+//=====================================================================
 app.delete("/api/deleteAllQuestion",(req,res) => {
     Question.deleteMany({},(err) =>  {
         console.log(err)
     })
 })
-
+//=====================================================================
 // USER API :
 app.delete("/api/deleteUserById",(req,res) => {
     User.findByIdAndDelete(req.body._id,(err,doc) => {
@@ -386,7 +508,7 @@ app.delete("/api/deleteUserById",(req,res) => {
     })
 })
 
-
+//=====================================================================
 
 
 
