@@ -138,7 +138,7 @@ app.post('/api/adminLogin', (req,res) => {
 })
 //=====================================================================
 app.post('/api/userLogin', (req,res) => {
-    User.find( {$and : [{username:req.body.username},{password:req.body.password}]}, (err,doc) => {
+    User.find( {$and : [{email:req.body.email},{password:req.body.password}]}, (err,doc) => {
         
         if (doc.length > 0){
             res.status(200).json({
