@@ -340,6 +340,19 @@ app.get('/api/getAllUserBookmarks' , (req,res) => {
 })
 //=====================================================================
 // ======================= Update ==========================
+app.post('/api/updateQuestion', (req,res)=> {
+    User.findByIdAndUpdate(req.body._id, {firstQuestion:req.body.firstQuestion,secondQuestion:req.body.secondQuestion}, {new:true}, (err,doc)=>{
+        if (err){
+            return res.status(400).send(err)
+        }
+
+        res.json({
+            success:true,
+            doc:doc
+        })
+    })
+})
+
 // QUESTION API :
 app.post('/api/validateQuestionById', (req,res)=> {
     Question.countDocuments({isVerified:true},(err,count) => {
