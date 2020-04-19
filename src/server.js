@@ -342,7 +342,6 @@ app.get('/api/getAllUserBookmarks' , (req,res) => {
 // ======================= Update ==========================
 app.post('/api/updateQuestion', (req,res)=> {
     Question.findByIdAndUpdate(req.body.id, {firstQuestion:req.body.firstQuestion,secondQuestion:req.body.secondQuestion}, {new:true}, (err,doc)=>{
-        console.log(req.body.id)
         if (err){
             return res.status(400).send(err)
         }
@@ -504,6 +503,7 @@ app.post('/api/addBookmark', (req,res)=> {
 // ======================= Delete ==========================
 // QUESTION API :
 app.delete("/api/deleteQuestionById",(req,res) => {
+    console.log(req.body._id)
     Question.findByIdAndDelete(req.body._id,(err,doc) => {
         if (err) res.status(400).send(err)
         res.send(doc)
