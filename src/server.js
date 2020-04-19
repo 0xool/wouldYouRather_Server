@@ -503,8 +503,8 @@ app.post('/api/addBookmark', (req,res)=> {
 // ======================= Delete ==========================
 // QUESTION API :
 app.delete("/api/deleteQuestionById",(req,res) => {
-    console.log(req.body._id)
-    Question.findByIdAndDelete(req.body._id,(err,doc) => {
+    console.log(req.body.id)
+    Question.findByIdAndDelete(req.body.id,(err,doc) => {
         if (err) res.status(400).send(err)
         res.send(doc)
     })
@@ -518,7 +518,7 @@ app.delete("/api/deleteAllQuestion",(req,res) => {
 //=====================================================================
 // USER API :
 app.delete("/api/deleteUserById",(req,res) => {
-    User.findByIdAndDelete(req.body._id,(err,doc) => {
+    User.findByIdAndDelete(req.body.id,(err,doc) => {
         if (err) res.status(400).send(err)
         res.send(doc)
     })
