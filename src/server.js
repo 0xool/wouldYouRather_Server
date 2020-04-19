@@ -342,6 +342,7 @@ app.get('/api/getAllUserBookmarks' , (req,res) => {
 // ======================= Update ==========================
 app.post('/api/updateQuestion', (req,res)=> {
     User.findByIdAndUpdate(req.body.id, {firstQuestion:req.body.firstQuestion,secondQuestion:req.body.secondQuestion}, {new:true}, (err,doc)=>{
+        console.log(req.body.id)
         if (err){
             return res.status(400).send(err)
         }
