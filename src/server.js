@@ -9,13 +9,26 @@ const config = require("./config.js").get(process.env.NODE_ENV)
 const util = require('util')
 const stream = require('stream')
 const pipeline = util.promisify(stream.pipeline)
+
 const stringify = require('csv-stringify')
 const fs = require('fs')
-// const fsp = require('fs').promises
+const session = require('express-session')
+const MongoStore = require('connect-mongo')(session);
+
 
 var app = express()
+const store = new MongoStore({
+    url:config.DATABASE
+})
+
+store.on('error', function(error) {
+    console.log(error);
+  });
+   
+
 const {Question} = require('../model/question.js')
 const {User} = require('../model/user.js')
+
 
 async function generateReport(){
     //create query cursor
@@ -50,6 +63,8 @@ generateReport()
     console.log("Not Connected to Database ERROR! ", err);
 });
 
+
+app.use(session({secret:'12340987',resave:false,saveUninitialized:false,store:store}))
 app.use(bodyParse.json())
 app.use(cookieParser())
 app.use(express.static(pather.join(__dirname, '../../client/build')))
@@ -138,6 +153,7 @@ app.post('/api/adminLogin', (req,res) => {
     User.find( {$and : [{username:req.body.username},{password:req.body.password},{isAdmin:true}]}, (err,doc) => {
         
         if (doc.length > 0){
+            req.session.isLoggedIn = true
             res.status(200).json({
                 auth:true,
                 message: "WELCOME.",
