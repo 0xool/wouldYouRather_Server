@@ -19,10 +19,6 @@ const clientConfigSchema = mongoose.Schema({
         type:String,
         default:'!اگه می‌خوای دیگه تبلیغ نبینی و از یه تیم جوون حمایت کنی، بسته‌ی حذف تبلیغات رو تهیه کن',
     },
-    secondQuestionVoteNumber: {
-        type:Number,
-        default:0,
-    },
     rateUsFirstText : {
         type:String,
         default:'می‌خوام به کدومش امتیاز بدم'
